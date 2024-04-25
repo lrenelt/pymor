@@ -16,7 +16,8 @@ from pymor.operators.interface import Operator
 
 @defaults('tol', 'failure_tolerance', 'num_testvecs')
 def adaptive_rrf(A, source_product=None, range_product=None, tol=1e-4,
-                 failure_tolerance=1e-15, num_testvecs=20, lambda_min=None, iscomplex=False):
+                 failure_tolerance=1e-15, num_testvecs=20, lambda_min=None, iscomplex=False,
+                 maxBasisSize=np.inf):
     r"""Adaptive randomized range approximation of `A`.
 
     This is an implementation of Algorithm 1 in :cite:`BS18`.
@@ -85,6 +86,8 @@ def adaptive_rrf(A, source_product=None, range_product=None, tol=1e-4,
 
     while maxnorm > testlimit:
         basis_length = len(B)
+        if basis_length >= maxBasisSize:
+            return B
         v = A.source.random(distribution='normal')
         if iscomplex:
             v += 1j*A.source.random(distribution='normal')
