@@ -788,7 +788,33 @@ class ParameterSpace(ParametricObject):
         if count is None:
             return get_param()
         else:
-            return [get_param() for _ in range(count)]
+            return [get_param() for _ in range(count)]        
+
+    def sample_lattice_rule(self, generating_vector, count, shift=0.0):
+        """Sample |parameter values| from the space using a lattice rule.
+
+        Parameters
+        ----------
+        generating_vector
+            The generating vector of the lattice rule. Must be a dict mapping
+            each parameter name to a list of integers of length equal to the
+            parameter's dimension.
+        count
+            The number of samples to generate.
+
+        Returns
+        -------
+        List of |parameter value| dicts.
+        """
+        assert set(generating_vector.keys()) == set(self.parameters.keys())
+        assert all(len(generating_vector[k]) == self.parameters[k] for k in self.parameters)
+        assert not self.constraints
+
+        def get_param(i):
+            return Mu((k, np.mod(i/count * generating_vector[k] + shift, 1) * (self.ranges[k][1] - self.ranges[k][0]) + self.ranges[k][0])
+                      for k in self.parameters)
+
+        return [get_param(i) for i in range(count)]
 
     def contains(self, mu):
         if not isinstance(mu, Mu):
